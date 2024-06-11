@@ -1,0 +1,164 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define VMU_MEMORY_SIZE 128
+
+// Define the VMU screen dimensions
+#define VMU_WIDTH 48
+#define VMU_HEIGHT 32
+
+// Define colors for drawing on the VMU screen
+typedef enum {
+    COLOR_BLACK = 0,
+    COLOR_WHITE = 1,
+    COLOR_RED = 2,
+    COLOR_GREEN = 3,
+    COLOR_BLUE = 4
+} VMU_Color;
+
+// Define player position and movement speed
+int playerX = VMU_WIDTH / 2;
+int playerY = VMU_HEIGHT / 2;
+int playerSpeed = 1;
+
+// Define the level map
+char levelMap[VMU_HEIGHT][VMU_WIDTH + 1] = {
+    "##################################################",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "#                                                #",
+    "##################################################"
+};
+
+// Function to clear the VMU screen
+void clearVMUScreen() {
+    memset(vmuScreen, COLOR_BLACK, sizeof(vmuScreen));
+}
+
+// Function to draw the level map on the VMU screen
+void drawLevelMap() {
+    for (int y = 0; y < VMU_HEIGHT; y++) {
+        for (int x = 0; x < VMU_WIDTH; x++) {
+            switch (levelMap[y][x]) {
+                case '#':
+                    drawPixel(x, y, COLOR_WHITE);
+                    break;
+                case ' ':
+                    drawPixel(x, y, COLOR_BLACK);
+                    break;
+            }
+        }
+    }
+}
+
+// Function to draw the player on the VMU screen
+void drawPlayer() {
+    drawPixel(playerX, playerY, COLOR_RED);
+}
+
+// Function to move the player
+void movePlayer(int dx, int dy) {
+    int newX = playerX + dx;
+    int newY = playerY + dy;
+
+    // Check if the new position is within bounds and not a wall
+    if (newX >= 0 && newX < VMU_WIDTH && newY >= 0 && newY < VMU_HEIGHT && levelMap[newY][newX] != '#') {
+        // Update player position
+        playerX = newX;
+        playerY = newY;
+    }
+}
+
+// Function to handle player input
+void handleInput(char input) {
+    switch (input) {
+        case 'w':
+            movePlayer(0, -playerSpeed);
+            break;
+        case 'a':
+            movePlayer(-playerSpeed, 0);
+            break;
+        case 's':
+            movePlayer(0, playerSpeed);
+            break;
+        case 'd':
+            movePlayer(playerSpeed, 0);
+            break;
+    }
+}
+
+// Function to display the VMU screen
+void displayVMUScreen() {
+    printf("VMU Screen:\n");
+    for (int y = 0; y < VMU_HEIGHT; y++) {
+        for (int x = 0; x < VMU_WIDTH; x++) {
+            switch (vmuScreen[y][x]) {
+                case COLOR_BLACK:
+                    printf(" ");
+                    break;
+                case COLOR_WHITE:
+                    printf("#");
+                    break;
+                case COLOR_RED:
+                    printf("P");
+                    break;
+            }
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    // Clear the VMU screen
+    clearVMUScreen();
+
+    // Main game loop
+    while (1) {
+        // Draw the level map
+        drawLevelMap();
+
+        // Draw the player
+        drawPlayer();
+
+        // Display the VMU screen
+        displayVMUScreen();
+
+        // Handle player input
+        char input;
+        printf("Enter movement (w/a/s/d): ");
+        scanf(" %c", &input);
+        handleInput(input);
+
+        // Clear the console screen (for better visualization)
+        system("clear");
+    }
+
+    return 0;
+}
